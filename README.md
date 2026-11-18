@@ -2,7 +2,7 @@
 
 **Similarity Lab** es una aplicación web diseñada para el análisis estadístico, léxico y semántico de similitud textual entre dos documentos mediante algoritmos de Procesamiento de Lenguaje Natural (NLP) e Inteligencia Artificial. Admite texto directo o carga de archivos **PDF (`.pdf`)**, **Word (`.docx`)** y **Texto (`.txt`, `.md`, `.csv`)**, y presenta resultados mediante tres métricas principales (**Embeddings Semánticos**, **Coseno TF-IDF** y **Jaccard**), tablas comparativas, gráficos interactivos e interpretación automática.
 
-> Para una explicación didáctica paso a paso de cómo funciona cada algoritmo y cómo se vectorizan las palabras, consulta también [GUIA_COMO_FUNCIONA.md](file:///home/sky/PycharmProjects/comparacion/GUIA_COMO_FUNCIONA.md) o haz clic en el botón **"¿Cómo funciona?"** dentro de la aplicación web.
+> Para una explicación didáctica paso a paso de cómo funciona cada algoritmo y cómo se vectorizan las palabras, consulta en el botón **"¿Cómo funciona?"** dentro de la aplicación web.
 
 ---
 
