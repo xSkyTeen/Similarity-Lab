@@ -42,7 +42,6 @@ comparacion/
 ├── app.py                     # Punto de entrada Flask y endpoints REST JSON (/api/compare, /api/upload)
 ├── requirements.txt           # Dependencias del proyecto
 ├── README.md                  # Documentación técnica y guía de ejecución
-├── GUIA_COMO_FUNCIONA.md      # Explicación sencilla y detallada de cómo funciona todo el sistema
 │
 ├── core/                      # Motor matemático, semántico y de lectura de archivos
 │   ├── __init__.py
