@@ -1,0 +1,5 @@
+pair_id,text_a,text_b,jaccard,dice,overlap,shingles,shingles_k2,shingles_k3,shingles_k5,cosine_tfidf,embeddings,tool_name,tool_params
+par_1,El procesamiento del lenguaje natural es fascinante,El procesamiento de lenguaje y texto es genial,0.363636,0.533333,0.571429,0.0,0.083333,0.0,0.0,0.402982,0.560067,external_validator_v1,default
+par_2,uno dos tres cuatro cinco,cero uno dos tres cuatro cinco seis siete ocho nueve,0.5,0.666667,1.0,0.375,0.444444,0.375,0.166667,0.579739,0.599287,external_validator_v1,default
+par_3,la inteligencia artificial transforma el mundo moderno,la inteligencia artificial transforma el mundo moderno,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,external_validator_v1,default
+par_4,algoritmo de busqueda binaria en grafos,receta tradicional de pastel de chocolate casero,0.090909,0.166667,0.166667,0.0,0.0,0.0,0.0,0.162794,0.266979,external_validator_v1,default

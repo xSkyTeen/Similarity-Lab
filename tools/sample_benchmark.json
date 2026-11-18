@@ -1,0 +1,70 @@
+{
+  "tool_name": "external_validator_v1",
+  "tool_params": "default",
+  "pairs": [
+    {
+      "pair_id": "par_1",
+      "text_a": "El procesamiento del lenguaje natural es fascinante",
+      "text_b": "El procesamiento de lenguaje y texto es genial",
+      "jaccard": 0.363636,
+      "dice": 0.533333,
+      "overlap": 0.571429,
+      "shingles": 0.0,
+      "shingles_k2": 0.083333,
+      "shingles_k3": 0.0,
+      "shingles_k5": 0.0,
+      "cosine_tfidf": 0.402982,
+      "embeddings": 0.560067,
+      "tool_name": "external_validator_v1",
+      "tool_params": "default"
+    },
+    {
+      "pair_id": "par_2",
+      "text_a": "uno dos tres cuatro cinco",
+      "text_b": "cero uno dos tres cuatro cinco seis siete ocho nueve",
+      "jaccard": 0.5,
+      "dice": 0.666667,
+      "overlap": 1.0,
+      "shingles": 0.375,
+      "shingles_k2": 0.444444,
+      "shingles_k3": 0.375,
+      "shingles_k5": 0.166667,
+      "cosine_tfidf": 0.579739,
+      "embeddings": 0.599287,
+      "tool_name": "external_validator_v1",
+      "tool_params": "default"
+    },
+    {
+      "pair_id": "par_3",
+      "text_a": "la inteligencia artificial transforma el mundo moderno",
+      "text_b": "la inteligencia artificial transforma el mundo moderno",
+      "jaccard": 1.0,
+      "dice": 1.0,
+      "overlap": 1.0,
+      "shingles": 1.0,
+      "shingles_k2": 1.0,
+      "shingles_k3": 1.0,
+      "shingles_k5": 1.0,
+      "cosine_tfidf": 1.0,
+      "embeddings": 1.0,
+      "tool_name": "external_validator_v1",
+      "tool_params": "default"
+    },
+    {
+      "pair_id": "par_4",
+      "text_a": "algoritmo de busqueda binaria en grafos",
+      "text_b": "receta tradicional de pastel de chocolate casero",
+      "jaccard": 0.090909,
+      "dice": 0.166667,
+      "overlap": 0.166667,
+      "shingles": 0.0,
+      "shingles_k2": 0.0,
+      "shingles_k3": 0.0,
+      "shingles_k5": 0.0,
+      "cosine_tfidf": 0.162794,
+      "embeddings": 0.266979,
+      "tool_name": "external_validator_v1",
+      "tool_params": "default"
+    }
+  ]
+}

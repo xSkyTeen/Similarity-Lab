@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Similarity Lab — Text Similarity &amp; NLP Analysis</title>
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='assets/logo.svg') }}">
+    <!-- Tipografía moderna y legible -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Estilos principales -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Chart.js para visualizaciones estadísticas -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <!-- 3.1 ENCABEZADO -->
+    <header class="app-header">
+        <div class="container header-inner">
+            <div class="brand">
+                <img src="{{ url_for('static', filename='assets/logo.svg') }}" alt="Similarity Lab Isotipo" class="brand-logo" width="42" height="42">
+                <div class="brand-titles">
+                    <h1 class="brand-name">Similarity Lab</h1>
+                    <p class="brand-subtitle">Text Similarity &amp; NLP Analysis</p>
+                </div>
+            </div>
+
+            <div class="header-right">
+                <button type="button" id="openGuideBtn" class="btn-header-guide" title="Abrir guía explicativa sobre cómo funciona el sistema">
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
+                    <span>¿Cómo funciona?</span>
+                </button>
+
+            </div>
+        </div>
+    </header>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="container main-content">
+
+        <!-- 3.2 SECCIÓN PRINCIPAL: COMPARACIÓN DE TEXTOS -->
+        <section class="workspace-section" aria-labelledby="workspaceTitle">
+            <div class="workspace-toolbar">
+                <div class="toolbar-left">
+                    <h2 id="workspaceTitle" class="section-heading">Comparación de Documentos (NLP &amp; Embeddings)</h2>
+                    <p class="section-subheading">Compara textos o archivos PDF/DOCX/TXT mediante <strong>Embeddings Semánticos (IA)</strong>, <strong>Coseno TF-IDF</strong> e <strong>Índice de Jaccard</strong>.</p>
+                </div>
+
+                <div class="toolbar-controls">
+                    <!-- Selector de casos de estudio -->
+                    <div class="sample-selector-wrap">
+                        <label for="sampleSelect" class="sr-only">Cargar ejemplo académico</label>
+                        <select id="sampleSelect" class="sample-select" aria-label="Cargar ejemplo de prueba">
+                            <option value="">Cargar ejemplo de referencia...</option>
+                            <option value="g07_panitas_plantilla_a_vs_b">Informe Técnico G07 Panitas: Plantilla A vs. Plantilla B (6 Métricas PLN)</option>
+                            <option value="unap_soporte_rag">Guía NLP: Búsqueda Semántica en Soporte y RAG k-NN (Casos 2.1–2.2)</option>
+                            <option value="unap_polisemia_clustering">Guía NLP: Polisemia ('banco') y Clustering k-Means (Caso 2.3)</option>
+                            <option value="escaneo_repeticion_contexto">Escaneo Profundo: Palabras Repetidas y Contexto Oración a Oración</option>
+                            <option value="sinonimia_embeddings">Ejemplo IA Local: Sinonimia y Contexto Amplio (0 Tokens API)</option>
+                            <option value="ejemplo_teorico">Ejemplo 1: Oraciones Teóricas (Jaccard vs. Coseno)</option>
+                            <option value="paraphrase_plagio">Ejemplo 2: Paráfrasis Académica (Est. A vs. Est. B)</option>
+                            <option value="tematica_comun">Ejemplo 3: Terminología Compartida (Est. A vs. Est. C)</option>
+                            <option value="temas_disjuntos">Ejemplo 4: Documentos Disjuntos (Est. A vs. Est. D)</option>
+                        </select>
+                    </div>
+
+                    <!-- Selector de Perfil de Comparación (Enhanced vs Reference) -->
+                    <div class="sample-selector-wrap">
+                        <label for="profileSelect" class="sr-only">Seleccionar perfil principal de comparación</label>
+                        <select id="profileSelect" class="sample-select" aria-label="Perfil principal de comparación" title="Elige cuál perfil actúa como principal (ambos se muestran en paralelo en los resultados)">
+                            <option value="enhanced" selected>Perfil Principal: Enriquecido (NLP Español / Segment IDF)</option>
+                            <option value="reference">Perfil Principal: Referencia (Canónico / Sklearn Estándar)</option>
+                        </select>
+                    </div>
+
+                    <!-- Configuración de eliminación de stopwords -->
+                    <label class="toggle-control" for="removeStopwordsToggle" title="Activa o desactiva la eliminación de palabras vacías del español durante el preprocesamiento">
+                        <input type="checkbox" id="removeStopwordsToggle" checked>
+                        <span class="toggle-track">
+                            <span class="toggle-thumb"></span>
+                        </span>
+                        <span class="toggle-label">Eliminar stopwords (ES)</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Barra informativa del Motor Híbrido Local (0 Consumo de Tokens API) -->
+            <div class="deep-scan-banner">
+                <div class="deep-scan-banner-left">
+                    <span class="zero-token-pill">0 Tokens API · 100% Local</span>
+                    <span class="gemini-desc">
+                        <strong>Motor Híbrido de Embeddings y Escaneo Profundo:</strong> Vectorización con <code>Scikit-Learn TruncatedSVD (LSA)</code> + <code>Ventana Contextual (±3 palabras)</code> + <code>Subpalabras FastText</code> + <code>BERTScore</code>, con escaneo de palabras repetidas, familias morfológicas y alineamiento oración por oración sin llamadas externas.
+                    </span>
+                </div>
+            </div>
+
+            <!-- Banner de validación / error elegante -->
+            <div id="validationAlert" class="validation-alert hidden" role="alert" aria-live="polite">
+                <div class="alert-content">
+                    <svg class="alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <span id="validationMessage">Por favor, ingresa contenido en ambos documentos antes de comparar.</span>
+                </div>
+                <button type="button" id="closeAlertBtn" class="alert-close" aria-label="Cerrar aviso">&times;</button>
+            </div>
+
+            <!-- Tarjetas de entrada colocadas una al lado de la otra -->
+            <div class="input-cards-grid">
+                <!-- TARJETA A -->
+                <article class="card input-card" id="cardA">
+                    <div class="input-card-header">
+                        <label for="textA" class="input-card-label">
+                            <span class="doc-badge badge-a">A</span>
+                            Texto A
+                        </label>
+                        <div class="card-header-actions">
+                            <span class="file-loaded-pill hidden" id="fileBadgeA"></span>
+                            <label for="fileInputA" class="btn-upload-file" title="Subir un documento PDF, Word (.docx) o Texto (.txt)">
+                                <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="17 8 12 3 7 8"></polyline>
+                                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                                </svg>
+                                <span>Subir PDF / DOCX / TXT</span>
+                            </label>
+                            <input type="file" id="fileInputA" class="sr-only" accept=".pdf,.docx,.txt,.md,.csv">
+                        </div>
+                    </div>
+                    <div class="textarea-wrapper">
+                        <textarea
+                            id="textA"
+                            class="doc-textarea"
+                            placeholder="Pega aquí el primer documento..."
+                            rows="9"
+                            spellcheck="true"
+                        ></textarea>
+                    </div>
+                    <div class="input-card-footer">
+                        <div class="counter-group">
+                            <span class="counter-item">
+                                <strong id="wordCountA">0</strong> palabras
+                            </span>
+                            <span class="counter-divider">·</span>
+                            <span class="counter-item">
+                                <strong id="charCountA">0</strong> caracteres
+                            </span>
+                        </div>
+                        <span class="counter-status" id="statusA">Admite texto o archivos PDF</span>
+                    </div>
+                </article>
+
+                <!-- TARJETA B -->
+                <article class="card input-card" id="cardB">
+                    <div class="input-card-header">
+                        <label for="textB" class="input-card-label">
+                            <span class="doc-badge badge-b">B</span>
+                            Texto B
+                        </label>
+                        <div class="card-header-actions">
+                            <span class="file-loaded-pill hidden" id="fileBadgeB"></span>
+                            <label for="fileInputB" class="btn-upload-file" title="Subir un documento PDF, Word (.docx) o Texto (.txt)">
+                                <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="17 8 12 3 7 8"></polyline>
+                                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                                </svg>
+                                <span>Subir PDF / DOCX / TXT</span>
+                            </label>
+                            <input type="file" id="fileInputB" class="sr-only" accept=".pdf,.docx,.txt,.md,.csv">
+                        </div>
+                    </div>
+                    <div class="textarea-wrapper">
+                        <textarea
+                            id="textB"
+                            class="doc-textarea"
+                            placeholder="Pega aquí el segundo documento..."
+                            rows="9"
+                            spellcheck="true"
+                        ></textarea>
+                    </div>
+                    <div class="input-card-footer">
+                        <div class="counter-group">
+                            <span class="counter-item">
+                                <strong id="wordCountB">0</strong> palabras
+                            </span>
+                            <span class="counter-divider">·</span>
+                            <span class="counter-item">
+                                <strong id="charCountB">0</strong> caracteres
+                            </span>
+                        </div>
+                        <span class="counter-status" id="statusB">Admite texto o archivos PDF</span>
+                    </div>
+                </article>
+            </div>
+
+            <!-- Botones de acción debajo de ambas tarjetas -->
+            <div class="actions-bar">
+                <button type="button" id="compareBtn" class="btn btn-primary">
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                    </svg>
+                    <span>Comparar textos</span>
+                </button>
+
+                <button type="button" id="swapBtn" class="btn btn-secondary" title="Intercambiar el contenido del Texto A y el Texto B">
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="17 1 21 5 17 9"></polyline>
+                        <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+                        <polyline points="7 23 3 19 7 15"></polyline>
+                        <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+                    </svg>
+                    <span>Intercambiar textos</span>
+                </button>
+
+                <button type="button" id="clearBtn" class="btn btn-ghost" title="Vaciar ambos documentos y reiniciar resultados">
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+                        <path d="M10 11v6"></path>
+                        <path d="M14 11v6"></path>
+                    </svg>
+                    <span>Limpiar</span>
+                </button>
+            </div>
+
+            <!-- Indicador de procesamiento mientras se realiza la comparación -->
+            <div id="loadingIndicator" class="loading-indicator hidden" aria-live="polite">
+                <div class="spinner"></div>
+                <div class="loading-text">
+                    <strong id="loadingTitle">Procesando análisis NLP y Embeddings...</strong>
+                    <span id="loadingSubtitle">Tokenizando documentos, vectorizando en espacio denso, construyendo matriz TF-IDF y calculando Jaccard.</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. PANEL DE RESULTADOS -->
+        <section id="resultsPanel" class="results-section hidden" aria-labelledby="resultsHeading">
+            <div class="results-header">
+                <div>
+                    <h2 id="resultsHeading" class="section-heading">Panel de Resultados Estadísticos y Vectoriales</h2>
+                    <p class="section-subheading" id="analysisMetaSubtitle">
+                        Análisis completado en memoria.
+                    </p>
+                </div>
+                <div class="results-meta-pills">
+                    <span class="meta-pill" id="confidencePill">Confianza Alta</span>
+                    <span class="meta-pill" id="embeddingEnginePill">Embeddings 128-D</span>
+                    <span class="meta-pill" id="stopwordsStatusPill">Stopwords filtradas</span>
+                    <span class="meta-pill" id="execTimePill">0.0 ms</span>
+                </div>
+            </div>
+
+            <!-- Advertencias automáticas del análisis (si existen) -->
+            <div id="analysisWarningsBox" class="analysis-warnings-box hidden" role="status">
+                <strong>Advertencias del análisis estadístico:</strong>
+                <ul id="analysisWarningsList"></ul>
+            </div>
+
+            <!-- 6.1 INDICADORES PRINCIPALES: EMBEDDINGS, COSENO TF-IDF, JACCARD Y VOCABULARIO -->
+            <div class="kpi-grid">
+                <!-- 1. Similitud por Embeddings Semánticos (IA / Contextual) -->
+                <article class="card kpi-card kpi-featured" id="kpiEmbeddingCard">
+                    <div class="kpi-top">
+                        <span class="kpi-label">Similitud por Embeddings (IA)</span>
+                        <span class="kpi-tag" id="kpiEmbeddingBadge">Contexto Amplio</span>
+                    </div>
+                    <div class="kpi-value-row">
+                        <span class="kpi-number kpi-number-lg" id="kpiEmbeddingPct">0.00%</span>
+                        <span class="kpi-decimal" id="kpiEmbeddingDec">Valor decimal: 0.0000</span>
+                    </div>
+                    <div class="progress-track" aria-label="Porcentaje de similitud por Embeddings">
+                        <div class="progress-fill progress-fill-primary" id="progressEmbedding" style="width: 0%;"></div>
+                    </div>
+                    <div class="kpi-meta-grid">
+                        <div class="kpi-meta-item">
+                            <span class="meta-key">Crudo (Raw) vs Calibrado</span>
+                            <strong class="meta-val" id="kpiEmbeddingRawVsCal">0.0% / 0.0%</strong>
+                        </div>
+                        <div class="kpi-meta-item">
+                            <span class="meta-key">Dimensiones / Puentes</span>
+                            <strong class="meta-val"><span id="kpiEmbeddingDim">128-D</span> · <span id="kpiSemanticBridges">0 pares</span></strong>
+                        </div>
+                    </div>
+                    <div class="kpi-formula">
+                        <code>EmbSim(A,B) = (e_A · e_B) / (||e_A|| × ||e_B||)</code>
+                    </div>
+                </article>
+
+                <!-- 2. Similitud del Coseno (TF-IDF) -->
+                <article class="card kpi-card kpi-featured-secondary" id="kpiCosineCard">
+                    <div class="kpi-top">
+                        <span class="kpi-label">Similitud Coseno (TF-IDF)</span>
+                        <span class="kpi-tag kpi-tag-soft">Ponderación Léxica</span>
+                    </div>
+                    <div class="kpi-value-row">
+                        <span class="kpi-number" id="kpiCosinePct">0.00%</span>
+                        <span class="kpi-decimal" id="kpiCosineDec">Valor decimal: 0.0000</span>
+                    </div>
+                    <div class="progress-track" aria-label="Porcentaje de similitud del coseno TF-IDF">
+                        <div class="progress-fill progress-fill-primary" id="progressCosine" style="width: 0%;"></div>
+                    </div>
+                    <div class="kpi-meta-grid">
+                        <div class="kpi-meta-item">
+                            <span class="meta-key">Vocabulario |V|</span>
+                            <strong class="meta-val" id="kpiVocabSize">0 términos</strong>
+                        </div>
+                        <div class="kpi-meta-item">
+                            <span class="meta-key">Coseno Frecuencia (BoW)</span>
+                            <strong class="meta-val" id="kpiBowCosine">0.00%</strong>
+                        </div>
+                    </div>
+                    <div class="kpi-formula">
+                        <code>CosSim(A,B) = (A · B) / (||A|| × ||B||)</code>
+                    </div>
+                </article>
+
+                <!-- 3. Similitud de Jaccard -->
+                <article class="card kpi-card">
+                    <div class="kpi-top">
+                        <span class="kpi-label">Similitud de Jaccard</span>
+                        <span class="kpi-tag kpi-tag-soft">Conjuntos Exactos</span>
+                    </div>
+                    <div class="kpi-value-row">
+                        <span class="kpi-number" id="kpiJaccardPct">0.00%</span>
+                        <span class="kpi-decimal" id="kpiJaccardDec">Valor decimal: 0.0000</span>
+                    </div>
+                    <div class="progress-track" aria-label="Porcentaje de similitud de Jaccard">
+                        <div class="progress-fill progress-fill-secondary" id="progressJaccard" style="width: 0%;"></div>
+                    </div>
+                    <div class="kpi-meta-grid">
+                        <div class="kpi-meta-item">
+                            <span class="meta-key">Intersección |A ∩ B|</span>
+                            <strong class="meta-val" id="kpiIntersection">0</strong>
+                        </div>
+                        <div class="kpi-meta-item">
+                            <span class="meta-key">Unión |A ∪ B|</span>
+                            <strong class="meta-val" id="kpiUnion">0</strong>
+                        </div>
+                    </div>
+                    <div class="kpi-formula">
+                        <code>J(A,B) = |A ∩ B| / |A ∪ B|</code>
+                    </div>
+                </article>
+
+                <!-- 4. Palabras Coincidentes y Exclusivas -->
+                <article class="card kpi-card">
+                    <div class="kpi-top">
+                        <span class="kpi-label">Coincidencias vs. Exclusivas</span>
+                        <span class="kpi-tag kpi-tag-soft">Vocabulario</span>
+                    </div>
+                    <div class="kpi-value-row">
+                        <span class="kpi-number" id="kpiSharedCount">0</span>
+                        <span class="kpi-decimal" id="kpiSharedRatioText">coincidentes · <span id="kpiExclusiveTotal">0</span> exclusivas</span>
+                    </div>
+                    <div class="progress-track" aria-label="Proporción de términos coincidentes">
+                        <div class="progress-fill progress-fill-muted" id="progressShared" style="width: 0%;"></div>
+                    </div>
+                    <div class="kpi-meta-grid">
+                        <div class="kpi-meta-item">
+                            <span class="meta-key">Exclusivas A / B</span>
+                            <strong class="meta-val"><span id="kpiExclusiveA">0</span> / <span id="kpiExclusiveB">0</span></strong>
+                        </div>
+                        <div class="kpi-meta-item">
+                            <span class="meta-key">Sørensen-Dice / Overlap</span>
+                            <strong class="meta-val"><span id="kpiDice">0%</span> / <span id="kpiOverlap">0%</span></strong>
+                        </div>
+                    </div>
+                    <div class="kpi-formula">
+                        <code>|A ∩ B| vs. |A Δ B|</code>
+                    </div>
+                </article>
+            </div>
+
+            <!-- 6.1A MATRIZ COMPARATIVA DE RESULTADOS DE SIMILITUD (6 TÉCNICAS DE PLN) -->
+            <article class="card stats-card" id="nlpTechniquesMatrixCard" style="margin-bottom: 1.5rem;">
+                <div class="card-header-clean">
+                    <div>
+                        <span class="section-eyebrow">Evaluación Cuantitativa y Cualitativa Integral</span>
+                        <h3 class="card-title">Matriz Comparativa de Resultados de Similitud (6 Técnicas de PLN)</h3>
+                        <p class="card-subtitle">
+                            Contraste completo entre <strong>Jaccard (Bruto vs. Filtrado)</strong>, espacios vectoriales dispersos (<strong>Coseno Count / BoW</strong>, <strong>TF-IDF Unigramas</strong> y <strong>TF-IDF Bigramas</strong>) y <strong>Embeddings Densos Contextuales</strong>.
+                        </p>
+                    </div>
+                    <span class="meta-pill" id="nlpMatrixBadge">6 Métricas Estándar PLN</span>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="data-table" id="nlpTechniquesMatrixTable">
+                        <thead>
+                            <tr>
+                                <th>Técnica de PLN</th>
+                                <th>Modelo / Representación</th>
+                                <th class="num-col">Valor Obtenido</th>
+                                <th class="num-col">Similitud (%)</th>
+                                <th>Sensibilidad Semántica</th>
+                                <th>Diagnóstico de Aplicabilidad</th>
+                            </tr>
+                        </thead>
+                        <tbody id="nlpTechniquesMatrixBody">
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="methodological-callout" id="categorizedKeywordsBox" style="margin-top: 0.9rem; font-size: 0.85rem;">
+                    <strong>Palabras Clave en la Intersección Exacta:</strong>
+                    <div id="categorizedKeywordsList" style="margin-top: 0.45rem; display: flex; flex-direction: column; gap: 0.35rem;"></div>
+                </div>
+            </article>
+
+            <!-- 6.1B COMPARACIÓN EN PARALELO: PERFIL REFERENCIA VS. PERFIL ENRIQUECIDO -->
+            <article class="card stats-card" id="profilesComparisonCard" style="margin-bottom: 1.5rem;">
+                <div class="card-header-clean">
+                    <div>
+                        <span class="section-eyebrow">Validación Externa &amp; Benchmarking Canónico</span>
+                        <h3 class="card-title">Comparación en Paralelo: Modo Referencia (`reference`) vs. Modo Enriquecido (`enhanced`)</h3>
+                        <p class="card-subtitle">
+                            Contraste simultáneo entre la implementación canónica estándar (<code>TfidfVectorizer()</code> por defecto de Scikit-learn sobre 2 documentos, Jaccard sobre <code>set</code> crudo y Embeddings con coseno crudo) y el pipeline NLP enriquecido en español.
+                        </p>
+                    </div>
+                    <span class="meta-pill" id="activeProfileBannerBadge">Principal: Enriquecido</span>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="data-table" id="profilesComparisonTable">
+                        <thead>
+                            <tr>
+                                <th>Métrica / Algoritmo</th>
+                                <th id="thReferenceCol">Modo Referencia (Canónico)</th>
+                                <th id="thEnhancedCol">Modo Enriquecido (NLP Español)</th>
+                                <th>Diferencia (Δ)</th>
+                                <th>Configuración Referencia vs. Enriquecido</th>
+                            </tr>
+                        </thead>
+                        <tbody id="profilesComparisonTableBody">
+                        </tbody>
+                    </table>
+                </div>
+                <div class="methodological-callout" style="margin-top: 0.9rem; font-size: 0.84rem;">
+                    <strong>Guía de uso de métricas de conjuntos:</strong>
+                    <strong>Jaccard</strong> = evalúa copia literal penalizando diferencias de tamaño;
+                    <strong>Overlap (Containment)</strong> = detecta un texto corto contenido dentro de uno largo;
+                    <strong>Sørensen-Dice</strong> = pondera el doble los términos compartidos;
+                    <strong>Shingles (k=2, 3, 5)</strong> = detecta copia literal de frases consecutivas.
+                </div>
+            </article>
+
+            <!-- 7. INTERPRETACIÓN AUTOMÁTICA -->
+            <article class="card interpretation-card" id="interpretationCard">
+                <div class="interpretation-header">
+                    <div class="interpretation-title-group">
+                        <span class="section-eyebrow">Interpretación Automática Basada en Reglas Estadísticas y Vectoriales</span>
+                        <h3 class="interpretation-title" id="interpTitle">Evaluación de Similitud</h3>
+                    </div>
+                    <span class="interp-badge" id="interpBadge">Análisis</span>
+                </div>
+                <p class="interpretation-summary" id="interpSummary"></p>
+                <ul class="interpretation-list" id="interpDetailsList"></ul>
+                <div class="methodological-callout" id="interpMethodologicalNote"></div>
+            </article>
+
+            <!-- 6.2 VISUALIZACIONES (CHART.JS) -->
+            <div class="charts-grid-top">
+                <!-- GRÁFICO 1: Comparación de similitud (Embeddings vs. Coseno TF-IDF vs. Jaccard) -->
+                <article class="card chart-card">
+                    <div class="card-header-clean">
+                        <div>
+                            <h3 class="card-title">Gráfico 1: Comparación de Algoritmos de Similitud</h3>
+                            <p class="card-subtitle">Contraste directo entre <strong>Embeddings Semánticos (IA)</strong>, <strong>Coseno TF-IDF</strong> e <strong>Índice de Jaccard</strong>.</p>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="similarityChart"></canvas>
+                    </div>
+                </article>
+
+                <!-- GRÁFICO 2: Distribución de vocabulario -->
+                <article class="card chart-card">
+                    <div class="card-header-clean">
+                        <div>
+                            <h3 class="card-title">Gráfico 2: Distribución de Vocabulario</h3>
+                            <p class="card-subtitle">Proporción de palabras exactas compartidas frente a los términos exclusivos de cada documento.</p>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="vocabularyChart"></canvas>
+                    </div>
+                </article>
+            </div>
+
+            <!-- SECCIÓN DE EMBEDDINGS: PUENTES SEMÁNTICOS Y VECTORIZACIÓN DE PALABRAS -->
+            <div class="stats-two-col">
+                <article class="card stats-card">
+                    <div class="card-header-clean">
+                        <div class="exclusive-title-row">
+                            <h3 class="card-title">Puentes Semánticos Detectados por Embeddings</h3>
+                            <span class="count-pill" id="semanticMatchesCountBadge">0</span>
+                        </div>
+                        <p class="card-subtitle">Palabras <em>distintas</em> entre el Texto A y el Texto B que poseen alta cercanía vectorial (sinónimos, conceptos equivalentes o familia morfológica).</p>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table compact-table">
+                            <thead>
+                                <tr>
+                                    <th>Término en A</th>
+                                    <th>Término en B</th>
+                                    <th>Relación Contextual</th>
+                                    <th class="num-col">Afinidad</th>
+                                </tr>
+                            </thead>
+                            <tbody id="semanticBridgesBody"></tbody>
+                        </table>
+                    </div>
+                </article>
+
+                <article class="card stats-card">
+                    <div class="card-header-clean">
+                        <h3 class="card-title">Vectorización de Palabras y Documentos (Embeddings)</h3>
+                        <p class="card-subtitle" id="embeddingProviderSubtitle">Representación numérica continua en el espacio de embeddings.</p>
+                    </div>
+                    <div class="embedding-vectors-box">
+                        <div class="vec-preview-item">
+                            <span class="vec-preview-label">Vector Denso Documento A (primeras 10 dimensiones):</span>
+                            <code class="vec-preview-code" id="vecPreviewA">[0.0, ...]</code>
+                        </div>
+                        <div class="vec-preview-item">
+                            <span class="vec-preview-label">Vector Denso Documento B (primeras 10 dimensiones):</span>
+                            <code class="vec-preview-code" id="vecPreviewB">[0.0, ...]</code>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table compact-table">
+                            <thead>
+                                <tr>
+                                    <th>Palabra</th>
+                                    <th>Raíz (Stem)</th>
+                                    <th>Muestra Vectorial (primeras 6 dims)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="wordVectorsSampleBody"></tbody>
+                        </table>
+                    </div>
+                </article>
+            </div>
+
+            <!-- GRÁFICO 3: Frecuencia de palabras -->
+            <article class="card chart-card chart-card-wide">
+                <div class="card-header-clean">
+                    <div>
+                        <h3 class="card-title">Gráfico 3: Frecuencia Comparativa de Palabras</h3>
+                        <p class="card-subtitle">Términos con mayor frecuencia de aparición en ambos documentos (Texto A vs. Texto B).</p>
+                    </div>
+                </div>
+                <div class="chart-container chart-container-lg">
+                    <canvas id="frequencyChart"></canvas>
+                </div>
+            </article>
+
+            <!-- 5. MÓDULO DE ESTADÍSTICAS GENERALES Y VECTORIZACIÓN -->
+            <div class="stats-two-col">
+                <!-- Estadísticas generales comparadas -->
+                <article class="card stats-card">
+                    <div class="card-header-clean">
+                        <h3 class="card-title">Estadísticas Generales del Corpus</h3>
+                        <p class="card-subtitle">Indicadores cuantitativos de longitud, riqueza léxica y relación de coincidencia.</p>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table compact-table">
+                            <thead>
+                                <tr>
+                                    <th>Indicador Estadístico</th>
+                                    <th class="num-col">Texto A</th>
+                                    <th class="num-col">Texto B</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Palabras activas (analizadas)</td>
+                                    <td class="num-col" id="statActiveWordsA">0</td>
+                                    <td class="num-col" id="statActiveWordsB">0</td>
+                                </tr>
+                                <tr>
+                                    <td>Palabras totales (antes de filtro)</td>
+                                    <td class="num-col" id="statRawWordsA">0</td>
+                                    <td class="num-col" id="statRawWordsB">0</td>
+                                </tr>
+                                <tr>
+                                    <td>Cantidad de caracteres (con espacios)</td>
+                                    <td class="num-col" id="statCharsA">0</td>
+                                    <td class="num-col" id="statCharsB">0</td>
+                                </tr>
+                                <tr>
+                                    <td>Cantidad de caracteres (sin espacios)</td>
+                                    <td class="num-col" id="statCharsNoSpacesA">0</td>
+                                    <td class="num-col" id="statCharsNoSpacesB">0</td>
+                                </tr>
+                                <tr>
+                                    <td>Número de palabras únicas (|A|, |B|)</td>
+                                    <td class="num-col" id="statUniqueA">0</td>
+                                    <td class="num-col" id="statUniqueB">0</td>
+                                </tr>
+                                <tr>
+                                    <td>Términos exclusivos (|A \ B|, |B \ A|)</td>
+                                    <td class="num-col" id="statExclA">0</td>
+                                    <td class="num-col" id="statExclB">0</td>
+                                </tr>
+                                <tr>
+                                    <td>Palabras vacías (stopwords) detectadas</td>
+                                    <td class="num-col" id="statStopwordsA">0</td>
+                                    <td class="num-col" id="statStopwordsB">0</td>
+                                </tr>
+                                <tr>
+                                    <td>Densidad léxica (Únicas / Activas)</td>
+                                    <td class="num-col" id="statDensityA">0%</td>
+                                    <td class="num-col" id="statDensityB">0%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </article>
+
+                <!-- Información de la vectorización TF-IDF, Embeddings y conjuntos -->
+                <article class="card stats-card">
+                    <div class="card-header-clean">
+                        <h3 class="card-title">Parámetros de Embeddings, TF-IDF y Conjuntos</h3>
+                        <p class="card-subtitle">Detalles internos del espacio vectorial de Embeddings, Scikit-learn TF-IDF y álgebra de conjuntos.</p>
+                    </div>
+                    <div class="vector-info-list">
+                        <div class="vector-info-row">
+                            <span class="vector-key">Motor de Embeddings Semánticos</span>
+                            <span class="vector-val mono" id="vecEmbeddingEngine">Motor Contextual 128-D</span>
+                        </div>
+                        <div class="vector-info-row">
+                            <span class="vector-key">Motor de Vectorización TF-IDF</span>
+                            <span class="vector-val mono" id="vecEngineName">TfidfVectorizer (L2)</span>
+                        </div>
+                        <div class="vector-info-row">
+                            <span class="vector-key">Dimensionalidad del vocabulario (|V| = |A ∪ B|)</span>
+                            <span class="vector-val mono" id="vecDimensionality">0 dimensiones</span>
+                        </div>
+                        <div class="vector-info-row">
+                            <span class="vector-key">Dimensión de la matriz TF-IDF</span>
+                            <span class="vector-val mono" id="vecMatrixShape">(2 × 0)</span>
+                        </div>
+                        <div class="vector-info-row">
+                            <span class="vector-key">Producto escalar TF-IDF / Embeddings</span>
+                            <span class="vector-val mono" id="vecDotProduct">0.0000</span>
+                        </div>
+                        <div class="vector-info-row">
+                            <span class="vector-key">Normas Euclídeas L2 (||A||, ||B||)</span>
+                            <span class="vector-val mono" id="vecNorms">1.0000 / 1.0000</span>
+                        </div>
+                        <div class="vector-info-row">
+                            <span class="vector-key">Términos compartidos exactos (|A ∩ B|)</span>
+                            <span class="vector-val mono" id="vecSharedCount">0 términos</span>
+                        </div>
+                        <div class="vector-info-row">
+                            <span class="vector-key">Distancia de Jaccard (1 - J)</span>
+                            <span class="vector-val mono" id="vecJaccardDist">1.0000</span>
+                        </div>
+                        <div class="vector-info-row">
+                            <span class="vector-key">Relación de coincidencia de vocabulario</span>
+                            <span class="vector-val mono" id="vecOverlapRatio">0.00%</span>
+                        </div>
+                    </div>
+                </article>
+            </div>
+
+            <!-- Rankings de frecuencia individuales por documento -->
+            <div class="stats-two-col">
+                <article class="card stats-card">
+                    <div class="card-header-clean">
+                        <h3 class="card-title">Palabras Más Frecuentes — Texto A</h3>
+                        <p class="card-subtitle">Frecuencia absoluta, peso relativo y ponderación TF-IDF en el documento A.</p>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table compact-table">
+                            <thead>
+                                <tr>
+                                    <th>Término</th>
+                                    <th class="num-col">Frecuencia</th>
+                                    <th class="num-col">% en A</th>
+                                    <th class="num-col">Peso TF-IDF</th>
+                                </tr>
+                            </thead>
+                            <tbody id="topWordsTableA"></tbody>
+                        </table>
+                    </div>
+                </article>
+
+                <article class="card stats-card">
+                    <div class="card-header-clean">
+                        <h3 class="card-title">Palabras Más Frecuentes — Texto B</h3>
+                        <p class="card-subtitle">Frecuencia absoluta, peso relativo y ponderación TF-IDF en el documento B.</p>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table compact-table">
+                            <thead>
+                                <tr>
+                                    <th>Término</th>
+                                    <th class="num-col">Frecuencia</th>
+                                    <th class="num-col">% en B</th>
+                                    <th class="num-col">Peso TF-IDF</th>
+                                </tr>
+                            </thead>
+                            <tbody id="topWordsTableB"></tbody>
+                        </table>
+                    </div>
+                </article>
+            </div>
+
+            <!-- 6.3 TABLA DE COINCIDENCIAS -->
+            <article class="card table-card">
+                <div class="table-card-header">
+                    <div>
+                        <h3 class="card-title">Tabla de Coincidencias Exactas (Intersección A ∩ B)</h3>
+                        <p class="card-subtitle">Desglose de las palabras idénticas presentes en ambos textos, sus frecuencias respectivas y diferencia de aparición.</p>
+                    </div>
+                    <div class="table-search-wrap">
+                        <input
+                            type="search"
+                            id="sharedSearchInput"
+                            class="table-search-input"
+                            placeholder="Filtrar palabra coincidente..."
+                            aria-label="Filtrar palabra coincidente"
+                        >
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="data-table" id="sharedTermsTable">
+                        <thead>
+                            <tr>
+                                <th>Palabra</th>
+                                <th class="num-col">Frecuencia en A</th>
+                                <th class="num-col">Frecuencia en B</th>
+                                <th class="num-col">Diferencia de frecuencia</th>
+                                <th class="num-col">Peso TF-IDF (A / B)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sharedTermsBody"></tbody>
+                    </table>
+                </div>
+            </article>
+
+            <!-- 6.4 PALABRAS EXCLUSIVAS -->
+            <div class="exclusive-grid">
+                <!-- Exclusivas de A -->
+                <article class="card exclusive-card">
+                    <div class="card-header-clean">
+                        <div class="exclusive-title-row">
+                            <h3 class="card-title">Términos Exclusivos del Documento A</h3>
+                            <span class="count-pill" id="exclusiveACountBadge">0</span>
+                        </div>
+                        <p class="card-subtitle">Palabras presentes en el Texto A que no aparecen literalmente en el Texto B (A \ B).</p>
+                    </div>
+                    <div class="chips-container" id="exclusiveAChips"></div>
+                </article>
+
+                <!-- Exclusivas de B -->
+                <article class="card exclusive-card">
+                    <div class="card-header-clean">
+                        <div class="exclusive-title-row">
+                            <h3 class="card-title">Términos Exclusivos del Documento B</h3>
+                            <span class="count-pill" id="exclusiveBCountBadge">0</span>
+                        </div>
+                        <p class="card-subtitle">Palabras presentes en el Texto B que no aparecen literalmente en el Texto A (B \ A).</p>
+                    </div>
+                    <div class="chips-container" id="exclusiveBChips"></div>
+                </article>
+            </div>
+
+            <!-- 6.5 ESCANEO PROFUNDO DE CONTEXTO: ALINEAMIENTO ORACIÓN POR ORACIÓN, KWIC Y DOMINIOS -->
+            <article class="card table-card" id="deepContextCard" style="margin-bottom: 24px;">
+                <div class="table-card-header">
+                    <div>
+                        <span class="section-eyebrow">Escaneo Profundo de Contexto Semántico y Discursivo (0 Tokens API)</span>
+                        <h3 class="card-title">Alineamiento Contextual Oración por Oración y Concordancias KWIC</h3>
+                        <p class="card-subtitle">Comparación exhaustiva de cada oración del Texto A frente al Texto B (detectando copias literales y paráfrasis contextuales) y análisis del entorno inmediato de cada palabra.</p>
+                    </div>
+                </div>
+
+                <!-- Resumen estadístico del alineamiento oracional y lectura -->
+                <div class="deep-scan-summary-strip">
+                    <div class="mini-stat-box">
+                        <span class="mini-stat-label">Oraciones Analizadas (A / B)</span>
+                        <span class="mini-stat-value" id="ctxSentencesCount">0 / 0</span>
+                        <span class="mini-stat-sub" id="ctxAvgAlignment">Afinidad media: 0.0%</span>
+                    </div>
+                    <div class="mini-stat-box">
+                        <span class="mini-stat-label">Diagnóstico Oracional</span>
+                        <span class="mini-stat-value" id="ctxMatchBreakdown">0 lit. · 0 paráf.</span>
+                        <span class="mini-stat-sub" id="ctxPartialBreakdown">0 parciales · 0 divergentes</span>
+                    </div>
+                    <div class="mini-stat-box">
+                        <span class="mini-stat-label">Legibilidad (Fernández Huerta)</span>
+                        <span class="mini-stat-value" id="ctxReadabilityScores">0.0 / 0.0</span>
+                        <span class="mini-stat-sub" id="ctxReadabilityLabels">Nivel A / Nivel B</span>
+                    </div>
+                    <div class="mini-stat-box">
+                        <span class="mini-stat-label">Similitud Estilística y LSA</span>
+                        <span class="mini-stat-value" id="ctxStyleAndLsa">0.0% / 0.0%</span>
+                        <span class="mini-stat-sub">Estilo Sintáctico / LSA SVD</span>
+                    </div>
+                </div>
+
+                <!-- Tabla de Alineamiento Oración por Oración -->
+                <div class="table-responsive" style="margin-bottom: 22px;">
+                    <table class="data-table compact-table">
+                        <thead>
+                            <tr>
+                                <th>Oración en Texto A</th>
+                                <th>Mejor Correspondencia en Texto B</th>
+                                <th>Vínculo Contextual y Pistas</th>
+                                <th class="num-col">Similitud Contextual</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sentenceAlignmentBody"></tbody>
+                    </table>
+                </div>
+
+                <!-- Ventanas de Concordancia KWIC y Dominios Temáticos -->
+                <div class="stats-two-col" style="margin-bottom: 0;">
+                    <div class="inspection-block">
+                        <h4 style="margin-bottom: 8px;">Concordancias KWIC (Uso Real de Palabras en su Contexto ±5)</h4>
+                        <div class="table-responsive">
+                            <table class="data-table compact-table">
+                                <thead>
+                                    <tr>
+                                        <th>Término / Puente</th>
+                                        <th>Contexto en A vs. Contexto en B</th>
+                                        <th class="num-col">Vecindario</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="kwicConcordancesBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="inspection-block">
+                        <h4 style="margin-bottom: 8px;">Dominios Temáticos Detectados y Conectores Discursivos</h4>
+                        <div class="vec-preview-item" style="margin-bottom: 10px;">
+                            <span class="vec-preview-label">Dominios Temáticos Compartidos:</span>
+                            <code class="vec-preview-code" id="sharedDomainsText">(ninguno detectado)</code>
+                        </div>
+                        <div class="chips-container" id="domainsContainer" style="margin-bottom: 12px;"></div>
+                        <h4 style="margin-bottom: 8px;">Marcadores y Conectores Lógicos (Texto A vs. Texto B)</h4>
+                        <div class="chips-container" id="discourseConnectorsContainer"></div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- 6.6 ESCANEO ROBUSTO DE PALABRAS REPETIDAS, FAMILIAS MORFOLÓGICAS Y FRASES RECURRENTES -->
+            <article class="card table-card" id="deepRepetitionCard" style="margin-bottom: 24px;">
+                <div class="table-card-header">
+                    <div>
+                        <span class="section-eyebrow">Auditoría de Redundancia Léxica, Morfológica y de Frases</span>
+                        <h3 class="card-title">Escaneo Robusto de Palabras Repetidas y Densidad de Repetición</h3>
+                        <p class="card-subtitle">Detecta palabras sobre-repetidas, raíces morfológicas reiteradas con distinta conjugación, repeticiones muy cercanas (cacofonía a &le; 6 palabras) y frases duplicadas.</p>
+                    </div>
+                </div>
+
+                <!-- Resumen estadístico de repeticiones y riqueza léxica -->
+                <div class="deep-scan-summary-strip">
+                    <div class="mini-stat-box">
+                        <span class="mini-stat-label">Tasa de Repetición (A / B)</span>
+                        <span class="mini-stat-value" id="repRateAB">0.0% / 0.0%</span>
+                        <span class="mini-stat-sub" id="repExcessAB">0 / 0 apariciones repetidas</span>
+                    </div>
+                    <div class="mini-stat-box">
+                        <span class="mini-stat-label">Palabras Repetidas Distintas</span>
+                        <span class="mini-stat-value" id="repDistinctAB">0 en A · 0 en B</span>
+                        <span class="mini-stat-sub" id="repSimultaneousCount">0 repetidas en ambos textos</span>
+                    </div>
+                    <div class="mini-stat-box">
+                        <span class="mini-stat-label">Hapax Legomena (1 sola vez)</span>
+                        <span class="mini-stat-value" id="repHapaxAB">0 (0%) / 0 (0%)</span>
+                        <span class="mini-stat-sub">Vocabulario no repetido</span>
+                    </div>
+                    <div class="mini-stat-box">
+                        <span class="mini-stat-label">Riqueza Léxica Guiraud (V/√N)</span>
+                        <span class="mini-stat-value" id="repGuiraudAB">0.00 / 0.00</span>
+                        <span class="mini-stat-sub" id="repProximityAlertsCount">0 alertas de proximidad corta</span>
+                    </div>
+                </div>
+
+                <!-- Tablas comparativas de palabras repetidas en A y en B -->
+                <div class="stats-two-col" style="margin-bottom: 18px;">
+                    <div class="inspection-block">
+                        <h4 style="margin-bottom: 8px;">Palabras Repetidas en Texto A (Frecuencia, Distancia y Nivel)</h4>
+                        <div class="table-responsive">
+                            <table class="data-table compact-table">
+                                <thead>
+                                    <tr>
+                                        <th>Palabra</th>
+                                        <th class="num-col">Repeticiones</th>
+                                        <th class="num-col">Distancia Mín/Media</th>
+                                        <th>Diagnóstico</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="repeatedWordsBodyA"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="inspection-block">
+                        <h4 style="margin-bottom: 8px;">Palabras Repetidas en Texto B (Frecuencia, Distancia y Nivel)</h4>
+                        <div class="table-responsive">
+                            <table class="data-table compact-table">
+                                <thead>
+                                    <tr>
+                                        <th>Palabra</th>
+                                        <th class="num-col">Repeticiones</th>
+                                        <th class="num-col">Distancia Mín/Media</th>
+                                        <th>Diagnóstico</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="repeatedWordsBodyB"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Familias morfológicas repetidas y frases recurrentes -->
+                <div class="stats-two-col" style="margin-bottom: 0;">
+                    <div class="inspection-block">
+                        <h4 style="margin-bottom: 8px;">Familias Morfológicas Repetidas (Misma Raíz en Distintas Formas)</h4>
+                        <p class="card-subtitle" style="margin-bottom: 8px;">Agrupa palabras como <em>analizar + análisis + analiza</em> dentro del mismo documento:</p>
+                        <div class="chips-container" id="morphRepetitionContainer" style="margin-bottom: 12px;"></div>
+                        <h4 style="margin-bottom: 8px;">Alertas de Repetición por Proximidad Cercana (&le; 6 palabras)</h4>
+                        <div class="chips-container" id="closeProximityContainer"></div>
+                    </div>
+
+                    <div class="inspection-block">
+                        <h4 style="margin-bottom: 8px;">Frases Repetidas (2 a 4 palabras) Internas y Compartidas (A ∩ B)</h4>
+                        <p class="card-subtitle" style="margin-bottom: 8px;">Secuencias multipalabra que se repiten dentro de cada texto o entre ambos documentos:</p>
+                        <div class="chips-container" id="repeatedPhrasesContainer"></div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- 6.7 ARQUITECTURA VECTORIAL, CLUSTERING K-MEANS, RAG K-NN Y AUTO-ATENCIÓN (GUÍA NLP) -->
+            <article class="card table-card" id="vectorSpaceGuideCard" style="margin-bottom: 24px;">
+                <div class="table-card-header">
+                    <div>
+                        <span class="section-eyebrow">Fundamentos Vectoriales, Recuperación k-NN y Machine Learning No Supervisado</span>
+                        <h3 class="card-title">Espacio Vectorial L2, Clustering Semántico k-Means, RAG k-NN y Polisemia (Self-Attention)</h3>
+                        <p class="card-subtitle">Métricas geométricas en ℝ<sup>N</sup> (Coseno, Distancia Euclidiana L2, Producto Punto con ||u||=1), agrupamiento automático KMeans (k=3), recuperación de vecinos más cercanos y desambiguación contextual.</p>
+                    </div>
+                </div>
+
+                <!-- Franja de métricas geométricas y buenas prácticas (Secciones 1.4 y 3) -->
+                <div class="deep-scan-summary-strip">
+                    <div class="mini-stat-box">
+                        <span class="mini-stat-label">Similitud Coseno Vectorial</span>
+                        <span class="mini-stat-value" id="vsmCosineValue">0.00%</span>
+                        <span class="mini-stat-sub" id="vsmOneHotSparsity">Dispersión One-Hot vs Denso</span>
+                    </div>
+                    <div class="mini-stat-box">
+                        <span class="mini-stat-label">Distancia Euclidiana L2 ||u − v||₂</span>
+                        <span class="mini-stat-value" id="vsmEuclideanDist">0.0000</span>
+                        <span class="mini-stat-sub" id="vsmEuclideanSim">Similitud Euclidiana: 0.0%</span>
+                    </div>
+                    <div class="mini-stat-box">
+                        <span class="mini-stat-label">Producto Punto (||u||=||v||=1)</span>
+                        <span class="mini-stat-value" id="vsmDotProduct">0.0000</span>
+                        <span class="mini-stat-sub" id="vsmL2Verified">Verificación u·v = cos(u,v)</span>
+                    </div>
+                    <div class="mini-stat-box">
+                        <span class="mini-stat-label">Arquitectura de Producción (ANN)</span>
+                        <span class="mini-stat-value" id="vsmProdOverlap">15% solapamiento</span>
+                        <span class="mini-stat-sub" id="vsmAnnIndexes">HNSW / IVF-PQ · L2 GPU</span>
+                    </div>
+                </div>
+
+                <!-- Clustering Semántico k-Means y Desambiguación de Polisemia -->
+                <div class="stats-two-col" style="margin-bottom: 18px;">
+                    <div class="inspection-block">
+                        <h4 style="margin-bottom: 8px;">Agrupamiento Semántico k-Means (Scikit-Learn)</h4>
+                        <p class="card-subtitle" style="margin-bottom: 8px;" id="kmeansMetaSubtitle">Clusters emergentes descubiertos automáticamente sobre las oraciones de ambos documentos:</p>
+                        <div class="table-responsive">
+                            <table class="data-table compact-table">
+                                <thead>
+                                    <tr>
+                                        <th>Cluster</th>
+                                        <th>Oraciones Agrupadas</th>
+                                        <th>Palabras Clave</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="kmeansClustersBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="inspection-block">
+                        <h4 style="margin-bottom: 8px;">Polisemia por Auto-Atención y Subpalabras FastText</h4>
+                        <p class="card-subtitle" style="margin-bottom: 8px;" id="polysemyMetaSubtitle">Variación dinámica del vector según su vecindario oracional (Self-Attention):</p>
+                        <div class="table-responsive" style="margin-bottom: 12px;">
+                            <table class="data-table compact-table">
+                                <thead>
+                                    <tr>
+                                        <th>Palabra</th>
+                                        <th>Sentido 1 vs. Sentido 2</th>
+                                        <th class="num-col">Divergencia</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="polysemyTermsBody"></tbody>
+                            </table>
+                        </div>
+                        <h4 style="margin-bottom: 6px;">Subpalabras FastText OOV (n-gramas 3–5 caracteres)</h4>
+                        <div class="chips-container" id="fasttextSubwordsContainer"></div>
+                    </div>
+                </div>
+
+                <!-- Recuperación Vectorial RAG k-NN (Texto A consulta -> Texto B conocimiento) -->
+                <div class="inspection-block">
+                    <h4 style="margin-bottom: 8px;">Búsqueda Semántica y Recuperación k-NN Estilo RAG (Consulta en A → Mejor Fragmento en B)</h4>
+                    <div class="table-responsive">
+                        <table class="data-table compact-table">
+                            <thead>
+                                <tr>
+                                    <th>Consulta (Texto A)</th>
+                                    <th>Fragmento Recuperado (k=1 en Texto B)</th>
+                                    <th class="num-col">Sim. Coseno</th>
+                                    <th class="num-col">Dist. Vectorial L2</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ragKnnBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </article>
+
+            <!-- SECCIÓN DESPLEGABLE: MÉTRICAS AVANZADAS Y FRAGMENTOS LITERALES COINCIDENTES -->
+            <details class="card inspection-drawer" id="advancedMetricsDrawer" open>
+                <summary class="inspection-summary">
+                    <span>Métricas Avanzadas (Dice, Containment, N-gramas, BERTScore) y Fragmentos Literales</span>
+                    <span class="inspection-hint">Mostrar / ocultar desglose</span>
+                </summary>
+                <div class="inspection-grid">
+                    <div class="inspection-block">
+                        <h4>Métricas Complementarias de Conjuntos, Caracteres y Alineamiento</h4>
+                        <div class="vector-info-list">
+                            <div class="vector-info-row">
+                                <span class="vector-key">Embeddings (Calibrado / Crudo)</span>
+                                <span class="vector-val mono" id="advEmbCalRaw">0.00% / 0.00%</span>
+                            </div>
+                            <div class="vector-info-row">
+                                <span class="vector-key">Alineamiento BERTScore (F1 / Precisión / Recall)</span>
+                                <span class="vector-val mono" id="advBertScore">0.00% (P: 0.00, R: 0.00)</span>
+                            </div>
+                            <div class="vector-info-row">
+                                <span class="vector-key">Similitud Chunk-a-Chunk (Oraciones/Bloques)</span>
+                                <span class="vector-val mono" id="advChunkSim">0.00%</span>
+                            </div>
+                            <div class="vector-info-row">
+                                <span class="vector-key">Coseno N-gramas de Caracteres (char_wb 3-5)</span>
+                                <span class="vector-val mono" id="advCharNgramCos">0.00%</span>
+                            </div>
+                            <div class="vector-info-row">
+                                <span class="vector-key">Coseno TF-IDF Unigramas + Bigramas (1, 2)</span>
+                                <span class="vector-val mono" id="advNgram12Cos">0.00%</span>
+                            </div>
+                            <div class="vector-info-row">
+                                <span class="vector-key">Coeficiente de Sørensen-Dice / Containment</span>
+                                <span class="vector-val mono" id="advDiceContainment">0.00% / 0.00%</span>
+                            </div>
+                            <div class="vector-info-row">
+                                <span class="vector-key">Jaccard Ponderado (Multiconjunto por Frecuencia)</span>
+                                <span class="vector-val mono" id="advWeightedJaccard">0.00%</span>
+                            </div>
+                            <div class="vector-info-row">
+                                <span class="vector-key">Jaccard Shingles (Bigramas 2-palabras / Trigramas 3-palabras)</span>
+                                <span class="vector-val mono" id="advShingleJaccard">0.00% / 0.00%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="inspection-block">
+                        <h4>Fragmentos Literales Exactos (5+ palabras) y Emparejamientos Morfológicos</h4>
+                        <div class="vec-preview-item" style="margin-bottom: 10px;">
+                            <span class="vec-preview-label">Subcadena común más larga de palabras:</span>
+                            <code class="vec-preview-code" id="advLongestSubstring">(ninguna)</code>
+                        </div>
+                        <div class="chips-container" id="exactFragmentsContainer" style="margin-bottom: 12px;"></div>
+                        <h4>Raíces Morfológicas Unificadas (Ej. tokenización ↔ tokenizar)</h4>
+                        <div class="chips-container" id="morphologicalMatchesContainer"></div>
+                    </div>
+                </div>
+            </details>
+
+            <!-- Visor de textos originales conservados vs. normalizados (Requisito 4.1) -->
+            <details class="card inspection-drawer">
+                <summary class="inspection-summary">
+                    <span>Inspeccionar Textos Originales Conservados y Preprocesamiento NLP</span>
+                    <span class="inspection-hint">Ver copias normalizadas</span>
+                </summary>
+                <div class="inspection-grid">
+                    <div class="inspection-block">
+                        <h4>Documento A — Original Conservado</h4>
+                        <pre class="inspection-pre" id="inspectOrigA"></pre>
+                        <h4>Documento A — Copia Normalizada</h4>
+                        <pre class="inspection-pre mono" id="inspectNormA"></pre>
+                    </div>
+                    <div class="inspection-block">
+                        <h4>Documento B — Original Conservado</h4>
+                        <pre class="inspection-pre" id="inspectOrigB"></pre>
+                        <h4>Documento B — Copia Normalizada</h4>
+                        <pre class="inspection-pre mono" id="inspectNormB"></pre>
+                    </div>
+                </div>
+            </details>
+        </section>
+    </main>
+
+    <!-- MODAL EDUCATIVO: ¿CÓMO FUNCIONA SIMILARITY LAB? -->
+    <div id="guideModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="guideModalTitle">
+        <div class="card modal-card">
+            <div class="modal-header">
+                <div>
+                    <span class="section-eyebrow">Documentación Técnica Resumida</span>
+                    <h2 id="guideModalTitle" class="section-heading">¿Cómo funciona Similarity Lab?</h2>
+                </div>
+                <button type="button" id="closeGuideBtn" class="alert-close" aria-label="Cerrar guía">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="guide-step">
+                    <h4>1. Entrada y Extracción de Documentos (Texto, PDF, DOCX, TXT)</h4>
+                    <p>Puedes pegar texto o subir archivos <strong>.pdf</strong>, <strong>.docx</strong> o <strong>.txt</strong>. El módulo <code>core/file_reader.py</code> extrae el texto en memoria sin guardar archivos en disco. Luego, <code>core/preprocessing.py</code> aplica normalización Unicode NFC, limpia artefactos de PDF, conserva la <strong>ñ</strong> y las tildes, y ejecuta un pipeline dual (léxico con raíces Snowball y semántico por oraciones).</p>
+                </div>
+                <div class="guide-step">
+                    <h4>2. Motor Híbrido Local de Embeddings (0 Consumo de Tokens API)</h4>
+                    <p>En lugar de depender de APIs externas que consumen tokens, <code>core/embeddings.py</code> ejecuta un motor híbrido 100% local que combina: <strong>Análisis Semántico Latente (LSA con <code>TruncatedSVD</code> de Scikit-learn)</strong>, <strong>Ventanas de Co-ocurrencia Contextual (±3 palabras)</strong>, <strong>Subpalabras FastText (3 a 5 caracteres)</strong>, un <strong>Grafo de 52 Clusters Conceptuales del Español</strong> y alineamiento <strong>BERTScore F1</strong>.</p>
+                </div>
+                <div class="guide-step">
+                    <h4>3. Escaneo Profundo de Contexto Oración a Oración y KWIC</h4>
+                    <p>El sistema compara cada oración del Documento A contra cada oración del Documento B para distinguir entre <strong>Copia Literal</strong>, <strong>Paráfrasis Contextual</strong> y <strong>Afinidad Temática</strong>. Además, extrae concordancias <strong>KWIC (Key Word In Context)</strong> mostrando las palabras previas y posteriores a cada término clave, detecta dominios temáticos y calcula la legibilidad de <strong>Fernández Huerta</strong>.</p>
+                </div>
+                <div class="guide-step">
+                    <h4>4. Auditoría de Palabras Repetidas, Familias Morfológicas y Frases</h4>
+                    <p>El módulo <code>core/statistics.py</code> escanea todas las palabras repetidas, mide la distancia mínima y media en tokens entre apariciones (alertando sobre repeticiones muy cercanas o cacofonías a &le; 6 palabras), agrupa repeticiones ocultas bajo la misma raíz morfológica (ej. <em>analizar / análisis / analiza</em>) y detecta frases repetidas de 2 a 4 palabras.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PIE DE PÁGINA -->
+    <footer class="app-footer">
+        <div class="container footer-inner">
+            <span><strong>Similarity Lab</strong> — Análisis Estadístico, Contextual y Semántico de Similitud Textual mediante NLP</span>
+            <span>Python · Flask · Scikit-learn LSA · Embeddings Locales (0 Tokens) · TF-IDF · Jaccard</span>
+        </div>
+    </footer>
+
+    <!-- Lógica del cliente -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
